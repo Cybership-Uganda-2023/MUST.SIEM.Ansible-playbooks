@@ -1,0 +1,19 @@
+nodes:
+  # Indexer server nodes
+  indexer:
+    - name: node-1
+      ip: 127.0.0.1
+        # - 3.91.89.187
+
+  # Wazuh server nodes
+  # Use node_type only with more than one Wazuh manager
+  server:
+    - name: node-1
+      ip: 127.0.0.1
+        # - 3.91.89.187
+
+  # Dashboard node
+  dashboard:
+    - name: node-1
+      ip: 127.0.0.1
+        # - 3.91.89.187

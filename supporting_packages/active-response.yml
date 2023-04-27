@@ -1,0 +1,52 @@
+---
+- name: Create custom active-response scripts
+  hosts: Wazuh-single
+  become: true
+  become_user: root
+  tasks:
+    - name: Add ossec configuration for active response (restart Wazuh when ossec.conf is modified)
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './active-response/restart-wazuh-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-manager
+      # source: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/restarting-wazuh-agent.html
+
+    - name: Add ossec rule for active response (restart Wazuh when ossec.conf is modified)
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './active-response/restart-wazuh-rules.xml') }}"
+        path: /var/ossec/etc/rules/local_rules.xml
+      notify:
+        - Restart wazuh-manager
+
+    - name: Add ossec configuration for active response (disable user account when brute force attack is detected)
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './active-response/disable-account-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-manager
+      # source: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/disabling-user-account.html
+
+    - name: Add ossec rule for active response (disable user account when brute force attack is detected)
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './active-response/disable-account-rules.xml') }}"
+        path: /var/ossec/etc/rules/local_rules.xml
+      notify:
+        - Restart wazuh-manager
+
+    - name: Add ossec configuration for active response (blocking SSH brute force attacks)
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './active-response/ssh-brute-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-manager
+      # source: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/blocking-ssh-brute-force.html#infrastructure
+
+  handlers:
+    - name: Restart wazuh-manager
+      ansible.builtin.service:
+        name: wazuh-manager
+        state: restarted

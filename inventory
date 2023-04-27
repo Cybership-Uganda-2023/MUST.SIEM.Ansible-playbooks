@@ -1,0 +1,49 @@
+single      ansible_host="34.203.220.66"        private_ip="10.10.1.5"      indexer_node_name=node-1
+agent       ansible_host="35.175.209.76"        private_ip="10.10.1.9"
+backup      ansible_host="34.207.197.197"       private_ip="10.10.1.4"
+
+indexer     ansible_host="34.203.220.66"        private_ip="10.10.1.5"      indexer_node_name=node-1
+dashboard   ansible_host="34.203.220.66"        private_ip="10.10.1.5"
+manager     ansible_host="34.203.220.66"        private_ip="10.10.1.5"
+
+[Wazuh-single]
+single
+
+[Wazuh-manager]
+manager
+
+[Wazuh-indexer]
+indexer
+
+[Wazuh-dashboard]
+dashboard
+
+[Wazuh-stack]
+manager
+indexer
+dashboard
+
+[Wazuh-agent]
+agent
+
+[Wazuh-agent-Linux]
+agent
+
+[Webserver]
+agent
+
+[Wazuh-backup]
+backup
+
+[backup-ssh]
+single
+manager
+indexer
+dashboard
+agent
+backup
+
+[all:vars]
+ansible_ssh_user=ubuntu
+ansible_ssh_private_key_file=/root/.ssh/MUST.pem
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'

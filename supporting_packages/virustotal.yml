@@ -1,0 +1,63 @@
+---
+- name: Set up VirusTotal on the Wazuh agent
+  become: true
+  become_user: root
+  hosts: Wazuh-agent-Linux
+  tasks:
+    # source: https://documentation.wazuh.com/current/proof-of-concept-guide/detect-remove-malware-virustotal.html#visualize-the-alerts
+    - name: Install jq (package)
+      ansible.builtin.package:
+        name:
+          - jq
+      notify:
+        - Restart wazuh-agent
+    
+    - name: Create the active response script
+      copy:
+        src: ./virustotal/remove-threat.sh
+        dest: /var/ossec/active-response/bin/remove-threat.sh
+        owner: root
+        group: wazuh
+        mode: 0750
+      notify:
+        - Restart wazuh-agent
+
+  handlers:
+    - name: Restart wazuh-agent
+      service:
+        name: wazuh-agent
+        state: restarted
+
+- name: Configure Wazuh manager for VirusTotal integration
+  hosts: Wazuh-single
+  become: true
+  become_user: root
+  tasks:
+    - name: Add group line to integration block
+      ansible.builtin.lineinfile:
+        path: /var/ossec/etc/ossec.conf
+        line:     <group>syscheck</group>
+        insertafter: </api_key>
+      notify:
+        - Restart wazuh-manager
+
+    - name: Add custom rules for VirusTotal
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './virustotal/virustotal-rules.xml') }}"
+        path: /var/ossec/etc/rules/local_rules.xml
+      notify:
+        - Restart wazuh-manager
+    
+    - name: Add Ossec configuration for VirusTotal
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './virustotal/virustotal-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-manager
+
+  handlers:
+    - name: Restart wazuh-manager
+      service:
+        name: wazuh-manager
+        state: restarted

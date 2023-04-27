@@ -1,0 +1,3 @@
+config_file
+second line of configuration
+password_enabled: yes

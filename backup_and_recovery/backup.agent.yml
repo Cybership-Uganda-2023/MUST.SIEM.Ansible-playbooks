@@ -1,0 +1,76 @@
+---
+- name: Back up the important files from the Wazuh agent
+  hosts: Wazuh-agents-Linux
+  become: true
+  become_user: root
+  vars_files:
+    - ../vars/vars-development.yml
+  tasks:
+    - name: Ensure rsync is installed
+      ansible.builtin.package:
+        name:
+          - rsync
+        state: present
+
+- name: Back up the important files from the Wazuh agent
+  hosts: Wazuh-backup
+  become: true
+  become_user: root
+  vars_files:
+    - ../vars/vars-development.yml
+  vars:
+    current_backup: "{{ backup_directories.agent_dest + '/' + ansible_date_time.date + '_' + ansible_date_time.hour + '-' + ansible_date_time.minute }}"
+    host_info:      "{{ current_backup + '/host-info.txt' }}"
+  tasks:
+    - name: Ensure rsync is installed
+      ansible.builtin.package:
+        name:
+          - rsync
+        state: present
+
+    - name: Ensure presence of Wazuh-agent backup directory
+      ansible.builtin.file:
+        path: "{{ backup_directories.agent_dest }}"
+        state: directory
+        mode: '0744'
+
+    - name: Create directory for current backup
+      ansible.builtin.file:
+        path: "{{ current_backup }}"
+        state: directory
+        mode: '0744'
+
+    - name: Create file for host information
+      ansible.builtin.copy:
+        src: /etc/os-release
+        dest: "{{ host_info }}"
+        remote_src: true
+    
+    - name: Enter host information
+      ansible.builtin.lineinfile:
+        path: "{{ host_info }}"
+        line: "ANSIBLE_HOSTNAME={{ inventory_hostname }}\nIPv4_ADDRESS={{ ansible_default_ipv4.address }}"
+
+    # - name: Ensure presence of Wazuh group
+    #   ansible.builtin.group:
+    #     name: wazuh
+
+    # - name: Ensure presence of Wazuh user
+    #   ansible.builtin.user:
+    #     name: wazuh
+    #     group: wazuh
+    #     create_home: false
+    #     password_lock: true
+
+    - name: Back up the Wazuh dashboard certificates and configuration files
+      ansible.posix.synchronize:
+        archive: true
+        src: "{{ item }}"
+        dest: "{{ current_backup }}"
+        rsync_opts:
+          - "-R"
+          - "-E"
+          - "-z"
+      delegate_to: agent
+      with_items: "{{ backup_directories.agent_src }}"
+      ignore_errors: true  # some directories may not exist

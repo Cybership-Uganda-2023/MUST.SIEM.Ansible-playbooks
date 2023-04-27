@@ -1,0 +1,100 @@
+---
+- name: Recover important files from the Wazuh manager
+  hosts: Wazuh-backup
+  become: true
+  become_user: root
+  vars_files:
+    - ../vars/vars-development.yml
+  tasks:
+    # - name: Ensure rsync is installed
+    #   ansible.builtin.package:
+    #     name:
+    #       - rsync
+    #     state: present
+
+    - name: Check presence of Wazuh-manager backup directory
+      stat:
+        path: "{{ backup_directories.manager_dest }}"
+      register: backup_dir
+
+    - name: Ensure presence of Wazuh-manager backup directory
+      fail: msg="Backup directory not present"
+      when: backup_dir.stat.exists != true
+
+    - name: Get name of files in backup directories
+      ansible.builtin.command: "ls -1t {{ backup_directories.manager_dest }}"
+      register: backup_dir_files
+
+    - name: Ensure presence of Wazuh-manager backed-up directories
+      fail: msg="No backups have been taken"
+      when: backup_dir_files.stdout_lines == []
+
+    - name: Set backup directory as variable
+      ansible.builtin.set_fact: recovery_dir="{{ backup_directories.manager_dest }}/{{ backup_dir_files.stdout_lines[0] }}"
+
+- name: Recover important files from the Wazuh manager
+  hosts: Wazuh-manager
+  become: true
+  become_user: root
+  vars_files:
+    - ../vars/vars-development.yml
+  vars:
+    recovery_dir: "{{ hostvars['backup']['recovery_dir'] }}"
+  tasks:
+#     - name: Ensure rsync is installed
+#       ansible.builtin.package:
+#         name:
+#           - rsync
+#         state: present
+
+    - name: Report the directory on the backup server that is to be used for recovery
+      debug:
+        msg: "{{ recovery_dir }}"
+
+    - name: Ensure presence of Wazuh-manager restore directory
+      ansible.builtin.file:
+        path: "{{ backup_directories.manager_dest }}"
+        state: directory
+        mode: '0744'
+
+    - name: Create directory for current restore
+      ansible.builtin.file:
+        path: "{{ recovery_dir }}"
+        state: directory
+        mode: '0744'
+
+    - name: Restore the Wazuh manager data and configuration files
+      ansible.posix.synchronize:
+        archive: true
+        src:  "{{ recovery_dir }}{{ item }}"
+        dest: "{{ recovery_dir }}{{ item }}"
+        rsync_opts:
+          - "-R"
+          - "-E"
+          - "-z"
+        owner: wazuh
+        group: wazuh
+      delegate_to: backup
+      with_items: "{{ backup_directories.manager_src }}"
+      ignore_errors: true  # some directories may not exist
+
+    # - name: Stop Wazuh manager service to prevent modification attempts while copying the Wazuh databases
+    #   ansible.builtin.service:
+    #     name: wazuh-manager
+    #     state: stopped
+
+    # - name: Restore the Wazuh databases
+    #   ansible.posix.synchronize:
+    #     archive: true
+    #     src: "{{ recovery_dir }}/var/ossec/queue/db"
+    #     dest: /var/ossec/queue/db/
+    #     rsync_opts:
+    #       - "-R"
+    #       - "-E"
+    #       - "-z"
+    #   ignore_errors: true
+
+    # - name: Start Wazuh manager service again 
+    #   ansible.builtin.service:
+    #     name: wazuh-manager
+    #     state: started

@@ -1,0 +1,19 @@
+---
+- name: Set up whodata auditing
+  hosts: Wazuh-agent-Linux
+  become: true
+  become_user: root
+  tasks:
+    - name: Install packages required for WHOdata auditing
+      ansible.builtin.package:
+        name:
+          - auditd
+        state: present
+      notify:
+        - Restart wazuh-agent
+
+  handlers:
+    - name: Restart wazuh-agent
+      service:
+        name: wazuh-agent
+        state: restarted

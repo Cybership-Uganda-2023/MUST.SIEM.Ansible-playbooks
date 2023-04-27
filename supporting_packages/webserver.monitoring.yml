@@ -1,0 +1,85 @@
+---
+- name: Enable monitoring of Apache webserver on Wazuh agent
+  hosts: Webserver
+  become: true
+  become_user: root
+  tasks:
+    - name: add Ossec configuration for SQL injection monitoring
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './webserver/webserver-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-agent
+
+  handlers:
+    - name: Restart wazuh-agent
+      service:
+        name: wazuh-agent
+        state: restarted
+
+- name: Enable web shell attack detection on Wazuh-manager
+  hosts: Wazuh-manager
+  become: true
+  become_user: root
+  tasks:
+    - name: Create the custom rules for Web shell attack detection
+      copy:
+        src: ./webserver/webshell_rules.xml
+        dest: /var/ossec/etc/rules/webshell_rules.xml
+        owner: wazuh
+        group: wazuh
+        mode: 0640
+      notify:
+        - Restart wazuh-manager
+
+    - name: Add custom decoders to detect patterns of network connections established by web shells on web servers
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './webserver/webserver-decoders.xml') }}"
+        path: /var/ossec/etc/decoders/local_decoder.xml
+      notify:
+        - Restart wazuh-manager
+  
+  handlers:
+    - name: Restart wazuh-manager
+      service:
+        name: wazuh-manager
+        state: restarted
+
+- name: Enable web shell attack detection on Wazuh-agent
+  hosts: Wazuh-agent
+  become: true
+  become_user: root
+  tasks:
+    - name: Obtain the Apache web server's user id
+      ansible.builtin.shell:
+        cmd: sudo apachectl -S | egrep '(User:)' | cut -d= -f 3
+      register: user_id  # user_id.stdout
+
+    - name: Modify the auditd configuration file
+      ansible.builtin.blockinfile:
+        path: /etc/audit/rules.d/audit.rules
+        block: |
+          ## Auditd rules that detect command execution from user www-data.
+          -a always,exit -F arch=b32 -S execve -F uid={{ user_id.stdout }} -F key=webshell_command_exec
+          -a always,exit -F arch=b64 -S execve -F uid={{ user_id.stdout }} -F key=webshell_command_exec
+
+          ## Auditd rules that detect network connections from user www-data.
+          -a always,exit -F arch=b64 -S socket -F a0=10 -F euid={{ user_id.stdout }} -k webshell_net_connect
+          -a always,exit -F arch=b64 -S socket -F a0=2 -F euid={{ user_id.stdout }} -k webshell_net_connect
+          -a always,exit -F arch=b32 -S socket -F a0=10 -F euid={{ user_id.stdout }} -k webshell_net_connect
+          -a always,exit -F arch=b32 -S socket -F a0=2 -F euid={{ user_id.stdout }} -k webshell_net_connect
+      notify:
+        - Restart wazuh-agent
+        - Restart auditd
+
+  handlers:
+    - name: Restart wazuh-agent
+      service:
+        name: wazuh-agent
+        state: restarted
+
+    - name: Restart auditd
+      service:
+        name: auditd
+        state: restarted

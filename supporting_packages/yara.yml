@@ -1,0 +1,157 @@
+---
+- name: Set up YARA configuration on the Wazuh agent
+  hosts: Wazuh-agent-Linux
+  become: true
+  become_user: root
+  tasks:
+    - name: Install packages required for YARA
+      ansible.builtin.package:
+        name:
+          - gcc
+          - autoconf
+          - libtool
+          - libssl-dev
+          - pkg-config
+          - automake
+          - make
+          - jq
+        state: present
+      notify:
+        - Restart wazuh-agent
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html
+      # better source: https://yara.readthedocs.io/en/stable/gettingstarted.html#getting-started
+
+    - name: Check if YARA directory exists
+      stat:
+        path: "/usr/local/bin/yara-4.2.3"
+      register: yara_dir
+      # source: https://phoenixnap.com/kb/ansible-check-if-file-exists
+
+    - name: Download YARA repo
+      ansible.builtin.get_url:
+        url: https://github.com/VirusTotal/yara/archive/v4.2.3.tar.gz
+        dest: /usr/local/bin/
+      when: not yara_dir.stat.exists
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html
+
+    - name: Check if YARA zip file exists
+      stat:
+        path: "/usr/local/bin/yara-4.2.3.tar.gz"
+      register: yara_file
+
+    - name: Unzip YARA repo
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: /usr/local/bin/yara-4.2.3.tar.gz
+        dest: /usr/local/bin/
+      when: yara_file.stat.exists
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/unarchive_module.html
+
+    - name: Check if YARA is installed
+      stat:
+        path: "/usr/local/bin/yarac"
+      register: yarac
+
+    - name: Install YARA
+      ansible.builtin.shell:
+        cmd: sudo ./bootstrap.sh && sudo ./configure && sudo make && sudo make install && sudo make check
+        chdir: /usr/local/bin/yara-4.2.3/
+      when: not yarac.stat.exists
+      notify:
+        - Restart wazuh-agent
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html#ansible-collections-ansible-builtin-shell-module
+
+    - name: Create the YARA rules directory
+      ansible.builtin.file:
+        path: /tmp/yara/rules
+        state: directory
+        mode: '0755'
+
+    - name: Check if YARA rules zip file exists
+      stat:
+        path: "/tmp/yara/rules/yara_rules.yar"
+      register: yara_rules_file
+      notify:
+        - Restart wazuh-agent
+
+    - name: Download the YARA rules
+      ansible.builtin.uri:
+        url: https://valhalla.nextron-systems.com/api/v1/get
+        dest: /tmp/yara/rules/yara_rules.yar
+        method: POST
+        body: "demo=demo&apikey=1111111111111111111111111111111111111111111111111111111111111111&format=text"
+        headers:
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          Accept-Language: "en-US,en;q=0.5"
+          Referer: "https://valhalla.nextron-systems.com/"
+          Content-Type: "application/x-www-form-urlencoded"
+          DNT: 1
+          Connection: "keep-alive"
+          Upgrade-Insecure-Requests: 1
+      when: not yara_rules_file.stat.exists
+      notify:
+        - Restart wazuh-agent
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/uri_module.html
+
+    - name: Create the YARA script
+      copy:
+        src: ./yara/yara.sh
+        dest: /var/ossec/active-response/bin/yara.sh
+        owner: root
+        group: wazuh
+        mode: 0750
+      notify:
+        - Restart wazuh-agent
+
+    - name: Add libyara library for loader
+      ansible.builtin.lineinfile:
+        path: /etc/ld.so.conf
+        line: /usr/local/lib
+      notify:
+        - Restart wazuh-agent
+      # source: https://yara.readthedocs.io/en/v3.4.0/gettingstarted.html
+
+    - name: Execute ldconfig command
+      ansible.builtin.command: ldconfig
+      notify:
+        - Restart wazuh-agent
+
+  handlers:
+    - name: Restart wazuh-agent
+      ansible.builtin.service:
+        name: wazuh-agent
+        state: restarted
+
+- name: Set up YARA configuration the the Wazuh manager
+  hosts: Wazuh-single
+  become: true
+  become_user: root
+  tasks:
+    - name: Add custom decoders for YARA
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './yara/yara-decoders.xml') }}"
+        path: /var/ossec/etc/decoders/local_decoder.xml
+      notify:
+        - Restart wazuh-manager
+      # source: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/blockinfile_module.html
+
+    - name: Add custom rules for YARA
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './yara/yara-rules.xml') }}"
+        path: /var/ossec/etc/rules/local_rules.xml
+      notify:
+        - Restart wazuh-manager
+
+    - name: Add Ossec configuration for YARA
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './yara/yara-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</ossec_config>"
+      notify:
+        - Restart wazuh-manager
+
+  handlers:
+    - name: Restart wazuh-manager
+      ansible.builtin.service:
+        name: wazuh-manager
+        state: restarted

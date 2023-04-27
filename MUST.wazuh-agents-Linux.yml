@@ -1,0 +1,80 @@
+---
+- hosts: Wazuh-agent-Linux
+  become: true
+  become_user: root
+  roles:
+    - ../roles/wazuh/ansible-wazuh-agent
+  vars_files:
+    - ./vars/vars-development.yml
+  vars:
+    wazuh_managers:
+      - address: "{{ single_network_host }}"
+        port: 1514
+        protocol: tcp
+        api_port: 55000
+        api_proto: 'https'
+        api_user: ansible
+        max_retries: 5
+        retry_interval: 5
+
+    wazuh_agent_authd:  # not adding the agent to the group...
+      registration_address: 127.0.0.1
+      enable: false
+      port: 1515
+      agent_name: null
+      ssl_agent_ca: null
+      ssl_agent_cert: null
+      ssl_agent_key: null
+      ssl_auto_negotiate: 'no'
+
+    wazuh_agent_syscheck:
+      frequency: 43200
+      scan_on_start: 'yes'
+      auto_ignore: 'no'
+      win_audit_interval: 60
+      skip_nfs: 'yes'
+      skip_dev: 'yes'
+      skip_proc: 'yes'
+      skip_sys: 'yes'
+      process_priority: 10
+      max_eps: 100
+      sync_enabled: 'yes'
+      sync_interval: '5m'
+      sync_max_interval: '1h'
+      sync_max_eps: 10
+      directories:
+        - dirs: "{{ syscheck_directories.check_all|join(',') }}"  
+        # source: https://www.sbarjatiya.com/notes_wiki/index.php/Convert_list_variable_to_comma_separated_list_in_ansible
+          checks: 'check_all="yes"'
+        - dirs: "{{ syscheck_directories.realtime|join(',') }}"
+          checks: 'realtime="yes"'
+        - dirs: "{{ syscheck_directories.whodata|join(',') }}"
+          checks: 'whodata="yes"'
+      ignore:
+        - /etc/mtab
+        - /etc/hosts.deny
+        - /etc/mail/statistics
+        - /etc/random-seed
+        - /etc/random.seed
+        - /etc/adjtime
+        - /etc/httpd/logs
+        - /etc/utmpx
+        - /etc/wtmpx
+        - /etc/cups/certs
+        - /etc/dumpdates
+        - /etc/svc/volatile
+      ignore_linux_type:
+        - '.log$|.swp$'
+      ignore_win:
+        - '.log$|.htm$|.jpg$|.png$|.chm$|.pnf$|.evtx$'
+      no_diff:
+        - /etc/ssl/private.key
+
+    wazuh_agent_sca:
+      enabled: 'yes'
+      scan_on_start: 'yes'
+      interval: '12h'
+      skip_nfs: 'yes'
+      day: ''
+      wday: ''
+      time: ''

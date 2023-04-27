@@ -1,0 +1,84 @@
+---
+# ./vars/vars-development.yml
+# indexer_network_host:   '3.86.8.169'
+# manager_network_host:   '3.86.8.169'
+# dashboard_network_host: '3.86.8.169'
+single_network_host:    '34.203.220.66'
+
+default_user:           "ubuntu"
+default_user_group:     "ubuntu"
+
+webserver_dir:          /var/www/must.local 
+
+syscheck_directories:  # source: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#defining-variables-as-key-value-dictionaries
+  check_all:
+    - /etc
+    - /usr/bin
+    - /usr/sbin
+    - /bin
+    - /sbin
+    - /boot
+    - "{{ '/home/' + default_user }}"
+    - /root
+    - "{{ webserver_dir }}"
+  realtime:
+    - /root
+    - /var/ossec/etc/ossec.conf
+    - "{{ webserver_dir }}"
+  whodata:
+    - "{{ '/home/' + default_user }}"
+
+backup_directories:
+  manager_dest:   "{{ '/home/' + default_user + '/wazuh_manager_files_backup'}}"
+  indexer_dest:   "{{ '/home/' + default_user + '/wazuh_indexer_files_backup'}}"
+  dashboard_dest: "{{ '/home/' + default_user + '/wazuh_dashboard_files_backup'}}"
+  agent_dest:     "{{ '/home/' + default_user + '/wazuh_agent_files_backup'}}"
+
+  manager_src:
+    - /etc/filebeat/
+    - /etc/postfix/
+    - /var/ossec/api/configuration/
+    - /var/ossec/etc/client.keys
+    - /var/ossec/etc/sslmanager*
+    - /var/ossec/etc/ossec.conf
+    - /var/ossec/etc/internal_options.conf
+    - /var/ossec/etc/local_internal_options.conf
+    - /var/ossec/etc/rules/local_rules.xml
+    - /var/ossec/etc/decoders/local_decoder.xml
+    - /var/ossec/etc/shared/
+    - /var/ossec/logs/
+    - /var/ossec/queue/agent-groups/
+    - /var/ossec/queue/agentless/
+    - /var/ossec/queue/agents-timestamp
+    - /var/ossec/queue/fts/
+    - /var/ossec/queue/rids/
+    - /var/ossec/stats/
+    - /var/ossec/var/db/agents/
+    - /var/ossec/var/multigroups/
+
+  indexer_src:
+    - /etc/wazuh-indexer/certs/
+    - /etc/wazuh-indexer/jvm.options
+    - /etc/wazuh-indexer/jvm.options.d
+    - /etc/wazuh-indexer/log4j2.properties
+    - /etc/wazuh-indexer/opensearch.yml
+    - /etc/wazuh-indexer/opensearch.keystore
+    - /etc/wazuh-indexer/opensearch-observability/
+    - /etc/wazuh-indexer/opensearch-reports-scheduler/
+    - /usr/share/wazuh-indexer/plugins/opensearch-security/securityconfig
+    - /usr/lib/sysctl.d/wazuh-indexer.conf
+
+  dashboard_src:
+    - /etc/wazuh-dashboard/certs/
+    - /etc/wazuh-dashboard/opensearch_dashboards.yml
+    - /usr/share/wazuh-dashboard/config/opensearch_dashboards.keystore
+    - /usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
+
+  agent_src:
+    - /var/ossec/etc/client.keys
+    # - /var/ossec/etc/ossec.conf
+    # - /var/ossec/etc/internal_options.conf
+    # - /var/ossec/etc/local_internal_options.conf
+    # - /var/ossec/etc/*.pem  # Does not work, fix later
+    # - /var/ossec/logs/
+    # - /var/ossec/queue/rids/

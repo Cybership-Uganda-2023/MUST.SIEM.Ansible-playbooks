@@ -1,0 +1,26 @@
+# Default: keyword check
+policy:
+  id: "keyword_check"
+  file: "keywordcheck.yml"
+  name: "SCA use case: Keyword check"
+  description: "Guidance for checking for a keyword or phrase in files on Ubuntu endpoints."
+  references:
+    - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/index.html
+    - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/creating-custom-policies.html
+
+requirements:
+  title: "Check that the desired file exists on the monitored endpoints"
+  description: "Requirements for running the SCA scans against endpoints with testfile.txt on them."
+  condition: any
+  rules:
+    - 'f:/usr/share/testfile.txt'
+
+checks:
+  - id: 10000
+    title: "Ensure password is disabled in the test configuration file"
+    description: "Password is enabled in the test configuration file."
+    rationale: "Password is considered weak for the custom test application. Threat actors can brute-force your password."
+    remediation: "Disable password by setting the value of the password_enabled option to no."
+    condition: none
+    rules:
+      - 'f:/usr/share/testfile.txt -> r:^password_enabled: yes$'

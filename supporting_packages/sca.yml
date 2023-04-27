@@ -1,0 +1,67 @@
+---
+- name: Create custom SCA policy rules
+  hosts: Wazuh-agent-Linux
+  become: true
+  become_user: root
+  tasks:
+  #######################
+  ### Keyword checks  ###
+  # https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/use-cases.html#ubuntu-endpoint)
+  #######################
+    - name: Create the file for showcasing purposes
+      copy:
+        src: ./SCA/testfile.txt
+        dest: /usr/share/testfile.txt
+        owner: root
+        group: wazuh
+        mode: 0650
+      notify:
+        - Restart wazuh-agent
+
+    - name: Create the custom SCA rules directory
+      ansible.builtin.file:
+        path: /var/ossec/etc/custom-sca-files/
+        state: directory
+        owner: root
+        group: wazuh
+        mode: '0770'
+      notify:
+        - Restart wazuh-agent
+
+    - name: Set up custom SCA rule - keywords
+      copy:
+        src: ./SCA/keywords.yml
+        dest: /var/ossec/etc/custom-sca-files/keywords.yml
+        owner: wazuh
+        group: wazuh
+        mode: 0750
+      notify:
+        - Restart wazuh-agent
+
+    - name: Enable the policy file
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('ansible.builtin.file', './SCA/sca-custom-ossec.conf') }}"
+        path: /var/ossec/etc/ossec.conf
+        insertbefore: "</sca>"
+      notify:
+        - Restart wazuh-agent
+
+  ###################################
+  ### Detecting running processes ###
+  # https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/use-cases.html#id3
+  ###################################
+    - name: Set up custom SCA rule - processcheck
+      copy:
+        src: ./SCA/processcheck.yml
+        dest: /var/ossec/etc/custom-sca-files/processcheck.yml
+        owner: wazuh
+        group: wazuh
+        mode: 0750
+      notify:
+        - Restart wazuh-agent
+
+  handlers:
+    - name: Restart wazuh-agent
+      service:
+        name: wazuh-agent
+        state: restarted

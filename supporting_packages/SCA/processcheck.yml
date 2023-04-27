@@ -1,0 +1,31 @@
+policy:
+  id: "process_check"
+  file: "processcheck.yml"
+  name: "SCA use case to detect running processes"
+  description: "Guidance for checking running processes on Linux endpoints."
+  references:
+    - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/index.html
+    - https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/creating-custom-policies.html
+
+requirements:
+  title: "Check that the SSH service and password-related files are present on the system"
+  description: "Requirements for running the SCA scan against the Unix based systems policy."
+  condition: any
+  rules:
+    - "f:$sshd_file"
+    - "f:/etc/passwd"
+    - "f:/etc/shadow"
+
+variables:
+  $sshd_file: /etc/ssh/sshd_config
+
+checks:
+  - id: 10003
+    title: "Ensure that netcat is not running on your endpoint"
+    description: "Netcat is running on your endpoint."
+    rationale: "Threat actors can use netcat to open ports on your endpoints or to connect to remote servers."
+    remediation: "Kill the netcat process if confirmed to be malicious after further investigation."
+    condition: none
+    rules:
+      - 'p:nc'
+      - 'p:netcat'

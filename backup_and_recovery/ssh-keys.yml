@@ -1,0 +1,16 @@
+---
+- name: Enable SSH connection between backup server and Wazuh servers
+  hosts: backup-ssh
+  become: true
+  become_user: root
+  vars_files:
+    - ../vars/secrets-development.yml
+    - ../vars/vars-development.yml
+  tasks:
+    - name: copy SSH key
+      ansible.builtin.copy:
+        src:    "{{ ssh_key_location }}"
+        dest:   "{{ ssh_key_location }}"
+        owner:  "{{ default_user }}"
+        group:  "{{ default_user_group }}"
+        mode:   '0400'

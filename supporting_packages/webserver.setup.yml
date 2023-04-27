@@ -1,0 +1,63 @@
+---
+- name: Ansible Playbook to Install and Setup Apache on Ubuntu
+  # source: https://linuxopsys.com/topics/ansible-playbook-to-install-apache
+  hosts: Webserver
+  become: true
+  become_user: root
+  vars:
+    http_host: must.local
+    http_conf: must.local.conf
+    http_port: 80
+  tasks:
+    - name: Install apache2 (service)
+      ansible.builtin.package:
+        name: 
+          - apache2
+          - auditd
+        state: present
+
+    - name: Install php8.1 (service)
+      ansible.builtin.package:
+        name: php8.1
+        install_recommends: false
+        state: present
+      # source: https://wazuh.com/blog/web-shell-attack-detection-with-wazuh/
+ 
+    - name: Create document root for domain configured in host variable
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+ 
+    - name: Copy your index file
+      template:
+        src: "webserver/index-template.html"
+        dest: "/var/www/{{ http_host }}/index.html"
+ 
+    - name: Set up virtuahHost
+      template:
+        src: "webserver/apache-template.conf"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+ 
+    - name: Enable site
+      command: a2ensite {{ http_conf }}
+      notify: restart-apache
+
+    - name: Disable default site
+      # source: https://www.digitalocean.com/community/tutorials/how-to-install-the-apache-web-server-on-ubuntu-20-04
+      command: a2dissite 000-default.conf
+      notify: restart-apache
+ 
+    - name: "UFW firewall allow HTTP on port {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+ 
+  handlers:
+    - name: restart-apache
+      service:
+        name: apache2
+        state: restarted

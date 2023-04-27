@@ -1,0 +1,9 @@
+<group name="pam,syslog,">
+  <rule id="100100" level="10" frequency="3" timeframe="120">
+    <if_matched_sid>5503</if_matched_sid>
+    <description>Possible password guess on $(dstuser): 3 failed logins in a short period of time</description>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+</group>
