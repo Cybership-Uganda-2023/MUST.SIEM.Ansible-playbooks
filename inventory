@@ -1,10 +1,10 @@
-single      ansible_host="172.26.0.41"         private_ip="172.26.0.41"      indexer_node_name=node-1
-agent       ansible_host="172.26.0.42"         private_ip="172.26.0.42"
-; backup      ansible_host="172.26.0.41"         private_ip="172.26.0.41"
+single      ansible_host="172.26.0.201"         private_ip="172.26.0.201"      indexer_node_name=node-1
+agent       ansible_host="172.26.0.202"         private_ip="172.26.0.202"
+backup      ansible_host="172.26.0.203"         private_ip="172.26.0.203"
 
-indexer     ansible_host="172.26.0.41"         private_ip="172.26.0.41"      indexer_node_name=node-1
-dashboard   ansible_host="172.26.0.41"         private_ip="172.26.0.41"
-manager     ansible_host="172.26.0.41"         private_ip="172.26.0.41"
+indexer     ansible_host="172.26.0.201"         private_ip="172.26.0.201"      indexer_node_name=node-1
+dashboard   ansible_host="172.26.0.201"         private_ip="172.26.0.201"
+manager     ansible_host="172.26.0.201"         private_ip="172.26.0.201"
 
 [Wazuh-single]
 single

@@ -3,7 +3,7 @@
 # indexer_network_host:   '3.86.8.169'
 # manager_network_host:   '3.86.8.169'
 # dashboard_network_host: '3.86.8.169'
-single_network_host:    '172.26.0.41'
+single_network_host:    '172.26.0.201'
 
 default_user:           "ubuntu"
 default_user_group:     "ubuntu"
