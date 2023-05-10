@@ -43,6 +43,7 @@
 
     - name: Add custom rules for VirusTotal
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/virustotal.yml"
         block: "{{ lookup('ansible.builtin.file', './virustotal/virustotal-rules.xml') }}"
         path: /var/ossec/etc/rules/local_rules.xml
       notify:
@@ -50,6 +51,7 @@
     
     - name: Add Ossec configuration for VirusTotal
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/virustotal.yml"
         block: "{{ lookup('ansible.builtin.file', './virustotal/virustotal-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</ossec_config>"

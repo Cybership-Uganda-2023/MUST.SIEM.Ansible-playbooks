@@ -6,6 +6,7 @@
   tasks:
     - name: Add ossec configuration for active response (restart Wazuh when ossec.conf is modified)
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/active-response.yml"
         block: "{{ lookup('ansible.builtin.file', './active-response/restart-wazuh-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</ossec_config>"
@@ -15,6 +16,7 @@
 
     - name: Add ossec rule for active response (restart Wazuh when ossec.conf is modified)
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/active-response.yml"
         block: "{{ lookup('ansible.builtin.file', './active-response/restart-wazuh-rules.xml') }}"
         path: /var/ossec/etc/rules/local_rules.xml
       notify:
@@ -22,6 +24,7 @@
 
     - name: Add ossec configuration for active response (disable user account when brute force attack is detected)
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/active-response.yml"
         block: "{{ lookup('ansible.builtin.file', './active-response/disable-account-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</ossec_config>"
@@ -31,6 +34,7 @@
 
     - name: Add ossec rule for active response (disable user account when brute force attack is detected)
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/active-response.yml"
         block: "{{ lookup('ansible.builtin.file', './active-response/disable-account-rules.xml') }}"
         path: /var/ossec/etc/rules/local_rules.xml
       notify:
@@ -38,6 +42,7 @@
 
     - name: Add ossec configuration for active response (blocking SSH brute force attacks)
       ansible.builtin.blockinfile:
+        marker: "Ansible managed: supporting_packages/active-response.yml"
         block: "{{ lookup('ansible.builtin.file', './active-response/ssh-brute-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</ossec_config>"
