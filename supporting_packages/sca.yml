@@ -40,7 +40,7 @@
 
     - name: Enable the policy file
       ansible.builtin.blockinfile:
-        marker: "{mark} ANSIBLE MANAGED FILE: supporting_packages/sca.yml"
+        marker: "sca"
         block: "{{ lookup('ansible.builtin.file', './SCA/sca-custom-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</sca>"
