@@ -6,7 +6,7 @@
   tasks:
     - name: add Ossec configuration for SQL injection monitoring
       ansible.builtin.blockinfile:
-        marker: "Ansible managed: supporting_packages/Webwserver.monitoring.yml"
+        marker: "webserver-monitoring"
         block: "{{ lookup('ansible.builtin.file', './webserver/webserver-ossec.conf') }}"
         path: /var/ossec/etc/ossec.conf
         insertbefore: "</ossec_config>"
@@ -36,7 +36,7 @@
 
     - name: Add custom decoders to detect patterns of network connections established by web shells on web servers
       ansible.builtin.blockinfile:
-        marker: "Ansible managed: supporting_packages/Webwserver.monitoring.yml"
+        marker: "webserver-monitoring"
         block: "{{ lookup('ansible.builtin.file', './webserver/webserver-decoders.xml') }}"
         path: /var/ossec/etc/decoders/local_decoder.xml
       notify:
@@ -60,7 +60,7 @@
 
     - name: Modify the auditd configuration file
       ansible.builtin.blockinfile:
-        marker: "Ansible managed: supporting_packages/Webwserver.monitoring.yml"
+        marker: "webserver-monitoring"
         path: /etc/audit/rules.d/audit.rules
         block: |
           ## Auditd rules that detect command execution from user www-data.
