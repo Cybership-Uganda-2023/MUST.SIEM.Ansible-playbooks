@@ -32,8 +32,8 @@ agent
 [Webserver]
 agent
 
-; [Wazuh-backup]
-; backup
+[Wazuh-backup]
+backup
 
 [backup-ssh]
 single
@@ -41,7 +41,7 @@ manager
 indexer
 dashboard
 agent
-; backup
+backup
 
 [all:vars]
 ansible_ssh_user=must
