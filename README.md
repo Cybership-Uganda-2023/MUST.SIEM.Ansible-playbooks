@@ -1,4 +1,4 @@
-# MUST_playbooks
+# MUST.SIEM.Ansible-playbooks
 
 This repository is a modified version of the [official Wazuh-Ansible repository's playbook file](https://github.com/wazuh/wazuh-ansible/tree/master/playbooks).  
 It is created to fit the needs of a SIEM solution for [MUST](https://www.must.ac.ug/).
@@ -52,7 +52,7 @@ When using the scripts in the [MUST.SIEM.Infrastructure repo](), one needs to cr
 
 ### certificates
 
-Wazuh requires certificates for deployment. These can be generated (see the [commands section](#generate-certificates)) using the files in [indexer\certificates](./indexer/certificates/). The [config file](./indexer/certificates/config.yml) can be modified to suit your setup. Currently, it is aimed at a single-stack Wazuh implementation (dashboard, indexer and manager on one instance). More information on the  [certification tool](./indexer/certificates/wazuh-certs-tool.sh) and the certificates can be found in the [official Wazuh documentation](https://github.com/Cybership-Uganda-2023/MUST_playbooks).
+Wazuh requires certificates for deployment. These can be generated (see the [commands section](#generate-certificates)) using the files in [indexer\certificates](./indexer/certificates/). The [config file](./indexer/certificates/config.yml) can be modified to suit your setup. Currently, it is aimed at a single-stack Wazuh implementation (dashboard, indexer and manager on one instance). More information on the  [certification tool](./indexer/certificates/wazuh-certs-tool.sh) and the certificates can be found in the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/certificates.html).
 
 ### Wazuh-manager
 
@@ -231,7 +231,7 @@ This section details some useful and necessary commands which can be used to ins
 First, one must move to the location of the repository. To ensure that the code is up-to-date, execute a pull request.
 
 ```Bash
-cd /etc/ansible/roles/wazuh-ansible/MUST_playbooks
+cd /etc/ansible/roles/wazuh-ansible/MUST.SIEM.Ansible-playbooks
 sudo git pull
 ```
 
