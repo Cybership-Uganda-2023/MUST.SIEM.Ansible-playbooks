@@ -38,6 +38,7 @@
   become_user: root
   vars_files:
     - ../vars/vars-development.yml
+    - ../vars/secrets-development.yml
   vars:
     recovery_dir: "{{ hostvars['backup']['recovery_dir'] }}"
   tasks:
