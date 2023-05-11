@@ -6,7 +6,7 @@
     - ../roles/wazuh/ansible-wazuh-agent
   vars_files:
     - ./vars/vars-development.yml
-  vars:
+  vars:  # see https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/reference.html
     wazuh_managers:
       - address: "{{ single_network_host }}"
         port: 1514

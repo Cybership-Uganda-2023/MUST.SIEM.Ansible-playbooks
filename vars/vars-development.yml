@@ -3,10 +3,10 @@
 # indexer_network_host:   '3.86.8.169'
 # manager_network_host:   '3.86.8.169'
 # dashboard_network_host: '3.86.8.169'
-single_network_host:    '34.203.220.66'
+single_network_host:    '172.26.2.10'
 
-default_user:           "ubuntu"
-default_user_group:     "ubuntu"
+default_user:           "must"
+default_user_group:     "must"
 
 webserver_dir:          /var/www/must.local 
 
@@ -76,9 +76,9 @@ backup_directories:
 
   agent_src:
     - /var/ossec/etc/client.keys
-    # - /var/ossec/etc/ossec.conf
-    # - /var/ossec/etc/internal_options.conf
-    # - /var/ossec/etc/local_internal_options.conf
+    - /var/ossec/etc/ossec.conf
+    - /var/ossec/etc/internal_options.conf
+    - /var/ossec/etc/local_internal_options.conf
     # - /var/ossec/etc/*.pem  # Does not work, fix later
-    # - /var/ossec/logs/
-    # - /var/ossec/queue/rids/
+    - /var/ossec/logs/
+    - /var/ossec/queue/rids/

@@ -2,6 +2,7 @@
 
 This repository is a modified version of the [official Wazuh-Ansible repository's playbook file](https://github.com/wazuh/wazuh-ansible/tree/master/playbooks).  
 It is created to fit the needs of a SIEM solution for [MUST](https://www.must.ac.ug/).
+It was installed following the [official Wazuh guide for deployment with Ansible](https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/index.html).
 
 *This documentation assumes the reader has at least a basic understanding of Ansible and Wazuh, specifically on the syntax and function of the configurations.* 
 
@@ -53,7 +54,7 @@ The `whodata` directories are used to [Audit who-data with FIM](https://document
 
 #### Sensitive variables and secrets
 
-Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/aws/-/blob/main/ansible/README.md#ansible-vault).
+Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/MUST.SIEM.Infrastructure/-/blob/main/ansible/README.md#ansible-vault).
 
 ### certificates
 
@@ -98,10 +99,8 @@ The documentation of this repo focuses on how these functionalities were impleme
 
 Through the use of the Wazuh password tool, located on the Wazuh manager under `/usr/share/wazuh-indexer/plugins/opensearch-security/tools/`, the default passwords for the following accounts were modified:
 - the `admin`-account, used for logging in the dashboard
-- the `wazuh`-account, used by the Wazuh API
-- the `wazuh-wui`-account, used by the Wazuh API
-
-The new passwords are recovered from the secrets-file in [/vars/](/vars/), which is created through the [GitLab CI/CD pipeline](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/aws/). The passwords therefore are initially created as GitLab CI/CD variables.
+- the `wazuh`-account, used by the Wazuh API[^6]
+- the `wazuh-wui`-account, used by the Wazuh API[^6]
 
 The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user. The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
 
@@ -224,9 +223,10 @@ The [Ansible synchronize module](https://docs.ansible.com/ansible/latest/collect
 
 The playbooks in [backup_and_recovery](/backup_and_recovery/) can be used for just that.
 The only caveat is that there needs to be an SSH connection possible between the servers.
-Luckily, Ansible already uses SSH, so the Ansible-SSH-key is copied over to the other servers with [ssh-keys.yml](/backup_and_recovery/ssh-keys.yml), whom then use it to communicate with Ansible synchronize. 
+A ssh-key is set up with Proxmox, then declared in the ansible vault.
+This key is then spread to the other machines through the [ssh-keys.yml](/backup_and_recovery/ssh-keys.yml) playbook, whom then use it to communicate with Ansible synchronize. 
 
-There are different playbooks to back up the manager, dashboard, indexer and agent, following the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/files-backup/index.html). For more information on how to use these playbooks, see [#backup-and-recovery-playbooks]. There are also several playbooks to restore the backups made in the `backup.`-playbooks.[^4]
+There are different playbooks to back up the manager, dashboard, indexer and agent, following the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/files-backup/index.html). For more information on how to use these playbooks, see [backup-and-recovery-playbooks](#backup-and-recovery-playbooks). There are also several playbooks to restore the backups made in the `backup.`-playbooks.[^4]
 
 ## Commands
 
@@ -392,3 +392,5 @@ sudo ansible-lint vars/vars-development.yml
 [^4]: The recovery playbooks are currently broken, throwing errors which are as of now unfixed
 
 [^5]: Special thanks to [MiguelazoDS](https://github.com/MiguelazoDS) for help with implementing this functionality: https://github.com/wazuh/wazuh/issues/14055
+
+[^6]: For an unknown reason, the playbook writes `api_wui_password` instead of `api_password` in the file `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml`. After executing this playbook, the user must manually go to this file and replace the api wui user password with the correct api user password (https://documentation.wazuh.com/current/user-manual/user-administration/password-management.html#changing-the-password-for-single-user). After this, restart the Wazuh dashboard, indexer and manager

@@ -6,11 +6,11 @@
   vars_files:
     - ../vars/vars-development.yml
   tasks:
-    # - name: Ensure rsync is installed
-    #   ansible.builtin.package:
-    #     name:
-    #       - rsync
-    #     state: present
+    - name: Ensure rsync is installed
+      ansible.builtin.package:
+        name:
+          - rsync
+        state: present
 
     - name: Check presence of Wazuh-manager backup directory
       stat:
@@ -38,14 +38,15 @@
   become_user: root
   vars_files:
     - ../vars/vars-development.yml
+    - ../vars/secrets-development.yml
   vars:
     recovery_dir: "{{ hostvars['backup']['recovery_dir'] }}"
   tasks:
-#     - name: Ensure rsync is installed
-#       ansible.builtin.package:
-#         name:
-#           - rsync
-#         state: present
+    - name: Ensure rsync is installed
+      ansible.builtin.package:
+        name:
+          - rsync
+        state: present
 
     - name: Report the directory on the backup server that is to be used for recovery
       debug:
@@ -72,6 +73,7 @@
           - "-R"
           - "-E"
           - "-z"
+        private_key: "{{ ssh_key_location }}"
         owner: wazuh
         group: wazuh
       delegate_to: backup
@@ -92,6 +94,7 @@
     #       - "-R"
     #       - "-E"
     #       - "-z"
+    #     private_key: "{{ ssh_key_location }}"
     #   ignore_errors: true
 
     # - name: Start Wazuh manager service again 
