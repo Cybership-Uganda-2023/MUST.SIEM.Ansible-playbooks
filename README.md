@@ -32,11 +32,11 @@ This section details the files and folders that differ from the [original repo](
 
 The [inventory file](./inventory) is used by the [commands](#commands) in this repository to reference the addresses and groups used. It is configured in three "parts". 
 
-First, variables are declared that reference the manager (named "stack") and the agent (named "agent"). Their public IP's (`ansible_host`), private IP's (`private_ip`) and (in the case of the indexer/manager) indexer node names (`indexer_node_name`) are referenced.
+First, variables are declared that reference the Wazuh manager, indexer, dashboard and the Wazuh agent(s), as well as a backup server. The manager, indexer and dashboard can be combined in a single machine, named `single`. In this case, the manager, indexer, dashboard and single should all reference the same IPs. Their public IP's (`ansible_host`), private IP's (`private_ip`) and (in the case of the indexer/manager) indexer node names (`indexer_node_name`) are referenced.
 
-Second, these variables are added to groups, written as `[Wazuh-function]`.  These groups are later used by the playbooks to set the configuration on the Wazuh instances. This means that the scope of the variables (stack, agent, ...) is contained to this document, and they can be changed without needing to modify other documents. However, the names of the groups are referenced in other documents and should not be changed lightly!
+Second, these variables are added to groups (often written as `[Wazuh-function]`).  These groups are later used by the playbooks to set the configuration on the Wazuh instances. This means that the scope of the variables (single, agent, ...) is contained to this document, and they can be changed without needing to modify other documents. However, the names of the groups are referenced in other documents and should not be changed lightly!
 
-Lastly, `[all:vars]` sets global variables for all the groups. These can be overwritten if needed. For the scope of this repository, it is assumed that all instances can be connected to with the MUST.pem private key, owned by the user "ubuntu".
+Lastly, `[all:vars]` sets global variables for all the groups. Here, the ssh-user and private key used by Ansible to connect to its clients are declared. `StricktHostKeyChecking` is turned off, to avoid prompts for known hosts.
 
 ### variables
 
