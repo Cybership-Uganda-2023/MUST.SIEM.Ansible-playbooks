@@ -54,7 +54,7 @@ The `whodata` directories are used to [Audit who-data with FIM](https://document
 
 #### Sensitive variables and secrets
 
-Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/aws/-/blob/main/ansible/README.md#ansible-vault).
+Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/MUST.SIEM.Infrastructure/-/blob/main/ansible/README.md#ansible-vault).
 
 ### certificates
 
@@ -101,8 +101,6 @@ Through the use of the Wazuh password tool, located on the Wazuh manager under `
 - the `admin`-account, used for logging in the dashboard
 - the `wazuh`-account, used by the Wazuh API[^6]
 - the `wazuh-wui`-account, used by the Wazuh API[^6]
-
-The new passwords are recovered from the secrets-file in [/vars/](/vars/), which is created through the [GitLab CI/CD pipeline](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/aws/). The passwords therefore are initially created as GitLab CI/CD variables.
 
 The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user. The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
 
@@ -225,9 +223,10 @@ The [Ansible synchronize module](https://docs.ansible.com/ansible/latest/collect
 
 The playbooks in [backup_and_recovery](/backup_and_recovery/) can be used for just that.
 The only caveat is that there needs to be an SSH connection possible between the servers.
-Luckily, Ansible already uses SSH, so the Ansible-SSH-key is copied over to the other servers with [ssh-keys.yml](/backup_and_recovery/ssh-keys.yml), whom then use it to communicate with Ansible synchronize. 
+A ssh-key is set up with Proxmox, then declared in the ansible vault.
+This key is then spread to the other machines through the [ssh-keys.yml](/backup_and_recovery/ssh-keys.yml) playbook, whom then use it to communicate with Ansible synchronize. 
 
-There are different playbooks to back up the manager, dashboard, indexer and agent, following the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/files-backup/index.html). For more information on how to use these playbooks, see [#backup-and-recovery-playbooks]. There are also several playbooks to restore the backups made in the `backup.`-playbooks.[^4]
+There are different playbooks to back up the manager, dashboard, indexer and agent, following the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/files-backup/index.html). For more information on how to use these playbooks, see [backup-and-recovery-playbooks](#backup-and-recovery-playbooks). There are also several playbooks to restore the backups made in the `backup.`-playbooks.[^4]
 
 ## Commands
 
