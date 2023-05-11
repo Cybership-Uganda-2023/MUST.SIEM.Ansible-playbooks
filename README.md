@@ -56,7 +56,7 @@ Wazuh requires certificates for deployment. These can be generated (see the [com
 
 ### Wazuh-manager
 
-In its current implementation, the Wazuh manager, indexer and dashboard are configured to work in a single instance. The [MUST.wazuh-single playbook](MUST.wazuh-single.yml) defines the configuration of this instance (allthough some capabilities are declared in separate files, see [Wazuh extended capabilities](#wazuh-extended-capabilities)).
+In its current implementation, the Wazuh manager, indexer and dashboard are configured to work in a single instance. The [MUST.wazuh-single playbook](/MUST.wazuh-single.yml) defines the configuration of this instance (allthough some capabilities are declared in separate files, see [Wazuh extended capabilities](#wazuh-extended-capabilities)).
 
 The playbook is a modified version of [wazuh-single in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-single.yml), and is largely unchanged, with the exception of the variables.
 
@@ -64,9 +64,9 @@ First, `vars_files` is used to reference the variables described in [the vars di
 
 ### Wazuh-agents
 
-The playbook is a modified version of [wazuh-agent in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-agent.yml), and is largely unchanged, with the exception of the variables.
+The [Linux agents](/MUST.wazuh-agents-Linux.yml) playbook is a modified version of [wazuh-agent in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-agent.yml), and is largely unchanged, with the exception of the variables.
 
-First, `vars_files` is used to reference the variables described in [the vars directory](#variables). Here, the IP address variable is used to refer to the manager's address. Also, in the `wazuh_managers` variable, the api protocol is set to https instead of http.
+First, `vars_files` is used to reference the variables described in [the vars directory](#variables). Here, the IP address variable is used to refer to the manager's address. Also, in the `wazuh_managers` variable, the api protocol is set to https instead of http to (slightly) enhance security.
 
 Secondly, many other variables are used to set the configuration options of `/var/ossec/etc/ossec.conf` on the Wazuh manager. The variables used here are described in [the official Wazuh documentations Variables references](https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/reference.html#wazuh-agent). Since most of these apply to the extended capabilities, their functionality will be described in [the relevant chapters](#wazuh-extended-capabilities).
 
