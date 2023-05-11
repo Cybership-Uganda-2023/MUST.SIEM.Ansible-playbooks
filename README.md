@@ -178,7 +178,7 @@ Wazuh has an active response module that helps security teams automate response 
 - [Block a user account if 3 unsuccessful login attempts are made (to prevent brute forcing)](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/disabling-user-account.html)
 - [Block and IP address that tries to brute force their way inside via SSH](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/blocking-ssh-brute-force.html#infrastructure)[^5]
 
-These configurations are applied using the [active-response playbook](/supporting_packages/active-response.yml) and the [active-response directory](/supporting_packages/active-response/). Most of the tasks defined therein simply add a new ossec rule and configuration block to the Wazuh manager. 
+These configurations are applied using the [active-response playbook](/supporting_packages/active-response.yml) and the files in the [active-response directory](/supporting_packages/active-response/). Most of the tasks defined therein simply add a new ossec rule and configuration block to the Wazuh manager. 
 
 You can visualize these alerts on the dashboard by selecting the agent, selecting the **Security events** module and filtering the results on the relevant rule ID.
 
