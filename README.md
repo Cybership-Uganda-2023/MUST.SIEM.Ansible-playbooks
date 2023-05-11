@@ -96,7 +96,7 @@ Through the use of the Wazuh password tool, located on the Wazuh manager under `
 - the `wazuh`-account, used by the Wazuh API[^6]
 - the `wazuh-wui`-account, used by the Wazuh API[^6]
 
-The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user. The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
+The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user (which is used to log in to the dashboard). The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
 
 #### Vulnerability scanning
 
