@@ -374,8 +374,8 @@ sudo systemctl status wazuh-agent
 ## Project status
 *the current status of the project. A todo list is appropriate*
 
-## Known errors
-*List the problems and bugs that are not yet fixed in the current iteration of the project.*
+## Notes
+*List the notes, problems and bugs that are not yet fixed in the current iteration of the project.*
 
 [^1]: Do note that this repo is aimed to be used in conjunction with the [official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible.git), and so it does not modify the roles created in that repository. Therefore, Ansible Lint may return errors on those role documents. This repository does not aim to refactor all those documents.
 
