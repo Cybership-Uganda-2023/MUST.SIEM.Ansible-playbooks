@@ -5,8 +5,8 @@
 # dashboard_network_host: '3.86.8.169'
 single_network_host:    '172.26.2.10'
 
-default_user:           "ubuntu"
-default_user_group:     "ubuntu"
+default_user:           "must"
+default_user_group:     "must"
 
 webserver_dir:          /var/www/must.local 
 
