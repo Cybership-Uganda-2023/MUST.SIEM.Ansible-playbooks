@@ -44,17 +44,11 @@ Lastly, `[all:vars]` sets global variables for all the groups. Here, the ssh-use
 
 To assemble the variables that will be shared throughout the different playbooks, the [vars directory](./vars/) was created. Here, two files exist: [vars-development](./vars/vars-development.yml) and [vars-production](./vars/vars-production.yml). Currently, only vars-development is used. These variables are set as defined in the [Ansible documentation on variables in included files](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#defining-variables-in-included-files-and-roles).
 
-Currently, three "groups" of variables have been defined. First, the Wazuh-manager's IP is referenced. This is used by the agents to communicate with the manager. Secondly, Wazuh groups are created, which can be used to manage the agents and group them logically. Lastly, a nested variable defines all the directories which should be checked by [syscheck](https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/syscheck.html), which the nested variables defining different FIM options.
-
-The `check_all` directories are checked for hashes, file size, owner and group, modification time and inode (by default).
-
-The `realtime` directories are used by the [File Integrity Monitoring (FIM)](https://documentation.wazuh.com/current/user-manual/capabilities/file-integrity/fim-configuration.html#configuring-real-time-monitoring) capability. This will enable real-time/continuous monitoring on Linux (using the inotify system calls) and Windows systems. Real time only works with directories, not individual files.
-
-The `whodata` directories are used to [Audit who-data with FIM](https://documentation.wazuh.com/current/user-manual/capabilities/auditing-whodata/who-linux.html). This will enable who-data monitoring on Linux and Windows systems.
+The `_network_host`-variables are used by wazuh-ansible to create the Wazuh manager, indexer, dashboard and agents. All other variables are used by the custom modifications made in this repository, such as the `vars` in the [Wazuh-single](/MUST.wazuh-single.yml) and [Wazuh-agents](/MUST.wazuh-agents-Linux.yml) playbooks, the [supporting packages](/supporting_packages/) and the [backup and recovery](/backup_and_recovery/) playbooks. These include nested variables containing directories checked by [syscheck](https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/syscheck.html) ([FIM](#fim)) and the [backup functionalities](#backup-and-recovery).
 
 #### Sensitive variables and secrets
 
-Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/MUST.SIEM.Infrastructure/-/blob/main/ansible/README.md#ansible-vault).
+When using the scripts in the [MUST.SIEM.Infrastructure repo](), one needs to create a vault containing sensitive variables and secrets. For more information, see [the GitHub documentation](https://github.com/Cybership-Uganda-2023/MUST.SIEM.Infrastructure/blob/main/ansible/README.md#ansible-vault).
 
 ### certificates
 
