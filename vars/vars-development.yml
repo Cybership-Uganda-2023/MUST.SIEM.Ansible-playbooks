@@ -76,9 +76,9 @@ backup_directories:
 
   agent_src:
     - /var/ossec/etc/client.keys
-    # - /var/ossec/etc/ossec.conf
-    # - /var/ossec/etc/internal_options.conf
-    # - /var/ossec/etc/local_internal_options.conf
+    - /var/ossec/etc/ossec.conf
+    - /var/ossec/etc/internal_options.conf
+    - /var/ossec/etc/local_internal_options.conf
     # - /var/ossec/etc/*.pem  # Does not work, fix later
-    # - /var/ossec/logs/
-    # - /var/ossec/queue/rids/
+    - /var/ossec/logs/
+    - /var/ossec/queue/rids/

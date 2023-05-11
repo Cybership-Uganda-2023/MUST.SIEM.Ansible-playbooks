@@ -62,6 +62,7 @@
           - "-R"  # relative paths
           - "-E"  # preserve executability
           - "-z"  # compress data during transmission
+        private_key: "{{ ssh_key_location }}"
       delegate_to: manager
       with_items: "{{ backup_directories.manager_src }}"
       ignore_errors: true  # some directories may not exist
@@ -81,6 +82,7 @@
           - "-R"
           - "-E"
           - "-z"
+        private_key: "{{ ssh_key_location }}"
       delegate_to: manager
 
     - name: Start Wazuh manager service again 

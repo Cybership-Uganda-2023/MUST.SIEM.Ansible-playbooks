@@ -18,6 +18,7 @@
   become_user: root
   vars_files:
     - ../vars/vars-development.yml
+    - ../vars/secrets-development.yml
   vars:
     current_backup: "{{ backup_directories.indexer_dest + '/' + ansible_date_time.date + '_' + ansible_date_time.hour + '-' + ansible_date_time.minute }}"
     host_info:      "{{ current_backup + '/host-info.txt' }}"
@@ -60,6 +61,7 @@
           - "-R"
           - "-E"
           - "-z"
+        private_key: "{{ ssh_key_location }}"
       delegate_to: indexer
       with_items: "{{ backup_directories.indexer_src }}"
       ignore_errors: true  # some directories may not exist
