@@ -71,6 +71,7 @@
           - "-R"
           - "-E"
           - "-z"
+        private_key: "{{ ssh_key_location }}"
       delegate_to: agent
       with_items: "{{ backup_directories.agent_src }}"
       ignore_errors: true  # some directories may not exist

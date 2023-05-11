@@ -63,10 +63,6 @@
         state: directory
         mode: '0744'
 
-    - name: test
-      debug:
-        msg: "{{ ssh_key_location }}"
-
     - name: Restore the Wazuh agent data and configuration files
       ansible.posix.synchronize:
         archive: true
