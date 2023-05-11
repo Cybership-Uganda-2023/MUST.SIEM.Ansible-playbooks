@@ -26,7 +26,7 @@
   vars_files:
     - ./vars/vars-development.yml
     - ./vars/secrets-development.yml
-  vars:
+  vars:  # see https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/reference.html
     single_node: true
     minimum_master_nodes: 1
     indexer_node_master: true

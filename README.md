@@ -2,6 +2,7 @@
 
 This repository is a modified version of the [official Wazuh-Ansible repository's playbook file](https://github.com/wazuh/wazuh-ansible/tree/master/playbooks).  
 It is created to fit the needs of a SIEM solution for [MUST](https://www.must.ac.ug/).
+It was installed following the [official Wazuh guide for deployment with Ansible](https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/index.html).
 
 *This documentation assumes the reader has at least a basic understanding of Ansible and Wazuh, specifically on the syntax and function of the configurations.* 
 
@@ -98,8 +99,8 @@ The documentation of this repo focuses on how these functionalities were impleme
 
 Through the use of the Wazuh password tool, located on the Wazuh manager under `/usr/share/wazuh-indexer/plugins/opensearch-security/tools/`, the default passwords for the following accounts were modified:
 - the `admin`-account, used for logging in the dashboard
-- the `wazuh`-account, used by the Wazuh API
-- the `wazuh-wui`-account, used by the Wazuh API
+- the `wazuh`-account, used by the Wazuh API[^6]
+- the `wazuh-wui`-account, used by the Wazuh API[^6]
 
 The new passwords are recovered from the secrets-file in [/vars/](/vars/), which is created through the [GitLab CI/CD pipeline](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/aws/). The passwords therefore are initially created as GitLab CI/CD variables.
 
@@ -392,3 +393,5 @@ sudo ansible-lint vars/vars-development.yml
 [^4]: The recovery playbooks are currently broken, throwing errors which are as of now unfixed
 
 [^5]: Special thanks to [MiguelazoDS](https://github.com/MiguelazoDS) for help with implementing this functionality: https://github.com/wazuh/wazuh/issues/14055
+
+[^6]: For an unknown reason, the playbook writes `api_wui_password` instead of `api_password` in the file `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml`. After executing this playbook, the user must manually go to this file and replace the api wui user password with the correct api user password (https://documentation.wazuh.com/current/user-manual/user-administration/password-management.html#changing-the-password-for-single-user). After this, restart the Wazuh dashboard, indexer and manager
