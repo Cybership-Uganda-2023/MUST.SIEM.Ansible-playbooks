@@ -19,8 +19,8 @@ It was installed following the [official Wazuh guide for deployment with Ansible
 2. [Commands](#commands)
     1. [Initialize](#initialize)
     2. [Generate certificats](#generate-certificates)
-    3. [Test configuration](#test-configuration)
-    4. [Execute playbooks](#execute-playbooks)
+    3. [Execute playbooks](#execute-playbooks)
+    4. [Test configuration](#test-configuration)
 
 ## Modified files
 
@@ -245,65 +245,13 @@ sudo chmod +x ./indexer/certificates/wazuh-certs-tool.sh
 sudo ./indexer/certificates/wazuh-certs-tool.sh -A
 ```
 
-### Test configuration
-
-#### Ansible server
-
-```Bash
-ansible --version
-sudo ansible Wazuh-agent -m ping -i inventory
-sudo ansible Wazuh-single -m ping -i inventory
-sudo ansible all -m ping -i inventory
-```
-
-#### Wazuh indexer
-
-```Bash
-sudo systemctl status wazuh-indexer
-curl -k -u admin:changeme https://localhost:9200
-```
-
-#### Wazuh dashboard
-
-```Bash
-sudo systemctl status wazuh-dashboard
-
-# Test API
-TOKEN=$(curl -u wazuh:wazuh -k -X GET "https://localhost:55000/security/user/authenticate?raw=true") && echo $TOKEN
-curl -k -X GET "https://localhost:55000/" -H "Authorization: Bearer $TOKEN"
-
-# get info/OS version on <AGENT ID> (ex: 001)
-curl -k -X GET "https://localhost:55000/agents?pretty=true&agents_list=001&select=os.name,os.major" -H  "Authorization: Bearer $TOKEN"
-sqlite3 /var/ossec/queue/db/global.db "SELECT OS_NAME, OS_MAJOR FROM AGENT WHERE ID = 001;"
-```
-
-#### Wazuh manager
-
-```Bash
-sudo systemctl status wazuh-manager
-sudo systemctl status filebeat
-sudo filebeat test output
-
-# Check vulnerability scan
-sudo cat /var/ossec/logs/ossec.log | grep -i -E "vulnerability"
-
-# Check created groups. source: https://documentation.wazuh.com/current/user-manual/reference/tools/agent-groups.html
-sudo /var/ossec/bin/agent_groups -l
-```
-
-#### Wazuh agent
-
-```Bash
-sudo systemctl status wazuh-agent
-```
-
 ### Execute playbooks
 
 The statements below can be used to execute the (relevant) playbooks.
 The configuration of these playbooks is described in [Modified files](#modified-files).
 
 ```Bash
-sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass  MUST.wazuh-single.yml
+sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass MUST.wazuh-single.yml
 
 sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass MUST.wazuh-agents-Linux.yml
 
@@ -351,7 +299,7 @@ sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pas
 
 #### Check validity of playbooks
 
-[Ansible Lint is a command-line tool for linting playbooks, roles and collections aimed toward any Ansible users. Its main goal is to promote proven practices, patterns and behaviors while avoiding common pitfalls that can easily lead to bugs or make code harder to maintain.](https://ansible-lint.readthedocs.io/)
+> Ansible Lint is a command-line tool for linting playbooks, roles and collections aimed toward any Ansible users. Its main goal is to promote proven practices, patterns and behaviors while avoiding common pitfalls that can easily lead to bugs or make code harder to maintain. [Ansible lint documentation](https://ansible-lint.readthedocs.io/)
 
 If Ansible Lint is installed on the Ansible server, the following commands can be used to check the configuration of the Ansible playbooks:[^1]
 
@@ -369,6 +317,58 @@ sudo ansible-lint supporting_packages/who.yml
 sudo ansible-lint supporting_packages/active-response.yml
 
 sudo ansible-lint vars/vars-development.yml
+```
+
+### Test configuration
+
+The configuration and installation fo Ansible and Wazuh can be tested and verified with the following commands.
+
+#### Ansible server
+
+```Bash
+ansible --version
+sudo ansible all -m ping -i inventory
+sudo ansible Wazuh-agents-Linux -m ping -i inventory
+sudo ansible Wazuh-single -m ping -i inventory
+```
+
+#### Wazuh indexer
+
+```Bash
+sudo systemctl status wazuh-indexer
+curl -k -u admin:changeme https://localhost:9200
+```
+
+#### Wazuh dashboard
+
+```Bash
+sudo systemctl status wazuh-dashboard
+
+# Test API
+TOKEN=$(curl -u wazuh:wazuh -k -X GET "https://localhost:55000/security/user/authenticate?raw=true") && echo $TOKEN
+curl -k -X GET "https://localhost:55000/" -H "Authorization: Bearer $TOKEN"
+
+# get info/OS version on <AGENT ID> (ex: 001)
+AGENT_ID='001'
+curl -k -X GET "https://localhost:55000/agents?pretty=true&agents_list=$AGENT_ID&select=os.name,os.major" -H  "Authorization: Bearer $TOKEN"
+sqlite3 /var/ossec/queue/db/global.db "SELECT OS_NAME, OS_MAJOR FROM AGENT WHERE ID = $AGENT_ID;"
+```
+
+#### Wazuh manager
+
+```Bash
+sudo systemctl status wazuh-manager
+sudo systemctl status filebeat
+sudo filebeat test output
+
+# Check vulnerability scan
+sudo cat /var/ossec/logs/ossec.log | grep -i -E "vulnerability"
+```
+
+#### Wazuh agent
+
+```Bash
+sudo systemctl status wazuh-agent
 ```
 
 ## Project status
