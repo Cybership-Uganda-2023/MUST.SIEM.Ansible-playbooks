@@ -371,9 +371,6 @@ sudo cat /var/ossec/logs/ossec.log | grep -i -E "vulnerability"
 sudo systemctl status wazuh-agent
 ```
 
-## Project status
-*the current status of the project. A todo list is appropriate*
-
 ## Notes
 *List the notes, problems and bugs that are not yet fixed in the current iteration of the project.*
 
