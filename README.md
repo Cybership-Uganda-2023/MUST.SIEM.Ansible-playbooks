@@ -297,28 +297,6 @@ sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pas
 sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass backup_and_recovery/recover.agent.yml
 ```
 
-#### Check validity of playbooks
-
-> Ansible Lint is a command-line tool for linting playbooks, roles and collections aimed toward any Ansible users. Its main goal is to promote proven practices, patterns and behaviors while avoiding common pitfalls that can easily lead to bugs or make code harder to maintain. [Ansible lint documentation](https://ansible-lint.readthedocs.io/)
-
-If Ansible Lint is installed on the Ansible server, the following commands can be used to check the configuration of the Ansible playbooks:[^1]
-
-```Bash
-sudo ansible-lint MUST.wazuh-single.yml
-
-sudo ansible-lint MUST.wazuh-agents-Linux.yml
-
-sudo ansible-lint supporting_packages/yara.yml
-
-sudo ansible-lint supporting_packages/sca.yml
-
-sudo ansible-lint supporting_packages/who.yml
-
-sudo ansible-lint supporting_packages/active-response.yml
-
-sudo ansible-lint vars/vars-development.yml
-```
-
 ### Test configuration
 
 The configuration and installation fo Ansible and Wazuh can be tested and verified with the following commands.
@@ -373,8 +351,6 @@ sudo systemctl status wazuh-agent
 
 ## Notes
 *List the notes, problems and bugs that are not yet fixed in the current iteration of the project.*
-
-[^1]: Do note that this repo is aimed to be used in conjunction with the [official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible.git), and so it does not modify the roles created in that repository. Therefore, Ansible Lint may return errors on those role documents. This repository does not aim to refactor all those documents.
 
 [^2]: The first Wazuh documentation mentioned does not explicitly mention which settings should be applied ot the manager, and which to the agent. In the second piece of documentation (to which this note refers) these are declared explicitly.
 
