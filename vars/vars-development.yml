@@ -2,7 +2,7 @@
 # ./vars/vars-development.yml
 
 ### Used by wazuh-ansible
-single_network_host:    '172.26.2.10'
+single_network_host:    '172.26.3.10'
 # indexer_network_host:   '3.86.8.169'
 # manager_network_host:   '3.86.8.169'
 # dashboard_network_host: '3.86.8.169'
