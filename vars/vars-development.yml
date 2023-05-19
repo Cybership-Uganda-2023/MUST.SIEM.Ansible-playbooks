@@ -1,17 +1,20 @@
 ---
 # ./vars/vars-development.yml
+
+### Used by wazuh-ansible
+single_network_host:    '172.26.2.10'
 # indexer_network_host:   '3.86.8.169'
 # manager_network_host:   '3.86.8.169'
 # dashboard_network_host: '3.86.8.169'
-single_network_host:    '172.26.2.10'
 
+### Used by MUST.SIM.Ansible-playbooks
 default_user:           "must"
 default_user_group:     "must"
 
 webserver_dir:          /var/www/must.local 
 
 syscheck_directories:  # source: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#defining-variables-as-key-value-dictionaries
-  check_all:
+  check_all:  # checked for hashes, file size, owner and group, modification time and inode (by default)
     - /etc
     - /usr/bin
     - /usr/sbin
@@ -21,11 +24,11 @@ syscheck_directories:  # source: https://docs.ansible.com/ansible/latest/playboo
     - "{{ '/home/' + default_user }}"
     - /root
     - "{{ webserver_dir }}"
-  realtime:
+  realtime:  # FIM: enable real-time/continuous monitoring on Linux (using the inotify system calls) and Windows systems. Real time only works with directories, not individual files
     - /root
     - /var/ossec/etc/ossec.conf
     - "{{ webserver_dir }}"
-  whodata:
+  whodata:  # FIM who-data: enable who-data monitoring on Linux and Windows systems
     - "{{ '/home/' + default_user }}"
 
 backup_directories:

@@ -1,4 +1,4 @@
-# MUST_playbooks
+# MUST.SIEM.Ansible-playbooks
 
 This repository is a modified version of the [official Wazuh-Ansible repository's playbook file](https://github.com/wazuh/wazuh-ansible/tree/master/playbooks).  
 It is created to fit the needs of a SIEM solution for [MUST](https://www.must.ac.ug/).
@@ -19,8 +19,8 @@ It was installed following the [official Wazuh guide for deployment with Ansible
 2. [Commands](#commands)
     1. [Initialize](#initialize)
     2. [Generate certificats](#generate-certificates)
-    3. [Test configuration](#test-configuration)
-    4. [Execute playbooks](#execute-playbooks)
+    3. [Execute playbooks](#execute-playbooks)
+    4. [Test configuration](#test-configuration)
 
 ## Modified files
 
@@ -32,11 +32,11 @@ This section details the files and folders that differ from the [original repo](
 
 The [inventory file](./inventory) is used by the [commands](#commands) in this repository to reference the addresses and groups used. It is configured in three "parts". 
 
-First, variables are declared that reference the manager (named "stack") and the agent (named "agent"). Their public IP's (`ansible_host`), private IP's (`private_ip`) and (in the case of the indexer/manager) indexer node names (`indexer_node_name`) are referenced.
+First, variables are declared that reference the Wazuh manager, indexer, dashboard and the Wazuh agent(s), as well as a backup server. The manager, indexer and dashboard can be combined in a single machine, named `single`. In this case, the manager, indexer, dashboard and single should all reference the same IPs. Their public IP's (`ansible_host`), private IP's (`private_ip`) and (in the case of the indexer/manager) indexer node names (`indexer_node_name`) are referenced.
 
-Second, these variables are added to groups, written as `[Wazuh-function]`.  These groups are later used by the playbooks to set the configuration on the Wazuh instances. This means that the scope of the variables (stack, agent, ...) is contained to this document, and they can be changed without needing to modify other documents. However, the names of the groups are referenced in other documents and should not be changed lightly!
+Second, these variables are added to groups (often written as `[Wazuh-function]`).  These groups are later used by the playbooks to set the configuration on the Wazuh instances. This means that the scope of the variables (single, agent, ...) is contained to this document, and they can be changed without needing to modify other documents. However, the names of the groups are referenced in other documents and should not be changed lightly!
 
-Lastly, `[all:vars]` sets global variables for all the groups. These can be overwritten if needed. For the scope of this repository, it is assumed that all instances can be connected to with the MUST.pem private key, owned by the user "ubuntu".
+Lastly, `[all:vars]` sets global variables for all the groups. Here, the ssh-user and private key used by Ansible to connect to its clients are declared. `StricktHostKeyChecking` is turned off, to avoid prompts for known hosts.
 
 ### variables
 
@@ -44,25 +44,19 @@ Lastly, `[all:vars]` sets global variables for all the groups. These can be over
 
 To assemble the variables that will be shared throughout the different playbooks, the [vars directory](./vars/) was created. Here, two files exist: [vars-development](./vars/vars-development.yml) and [vars-production](./vars/vars-production.yml). Currently, only vars-development is used. These variables are set as defined in the [Ansible documentation on variables in included files](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html#defining-variables-in-included-files-and-roles).
 
-Currently, three "groups" of variables have been defined. First, the Wazuh-manager's IP is referenced. This is used by the agents to communicate with the manager. Secondly, Wazuh groups are created, which can be used to manage the agents and group them logically. Lastly, a nested variable defines all the directories which should be checked by [syscheck](https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/syscheck.html), which the nested variables defining different FIM options.
-
-The `check_all` directories are checked for hashes, file size, owner and group, modification time and inode (by default).
-
-The `realtime` directories are used by the [File Integrity Monitoring (FIM)](https://documentation.wazuh.com/current/user-manual/capabilities/file-integrity/fim-configuration.html#configuring-real-time-monitoring) capability. This will enable real-time/continuous monitoring on Linux (using the inotify system calls) and Windows systems. Real time only works with directories, not individual files.
-
-The `whodata` directories are used to [Audit who-data with FIM](https://documentation.wazuh.com/current/user-manual/capabilities/auditing-whodata/who-linux.html). This will enable who-data monitoring on Linux and Windows systems.
+The `_network_host`-variables are used by wazuh-ansible to create the Wazuh manager, indexer, dashboard and agents. All other variables are used by the custom modifications made in this repository, such as the `vars` in the [Wazuh-single](/MUST.wazuh-single.yml) and [Wazuh-agents](/MUST.wazuh-agents-Linux.yml) playbooks, the [supporting packages](/supporting_packages/) and the [backup and recovery](/backup_and_recovery/) playbooks. These include nested variables containing directories checked by [syscheck](https://documentation.wazuh.com/current/user-manual/reference/ossec-conf/syscheck.html) ([FIM](#fim)) and the [backup functionalities](#backup-and-recovery).
 
 #### Sensitive variables and secrets
 
-Sensitive variables and secrets can be added through the GitLab-pipeline, or manually. For more information, see [the GitLab documentation](https://gitlab.com/it-factory-thomas-more/cloud-engineering/22-23/r0717420/cybership-uganda-2023/MUST.SIEM.Infrastructure/-/blob/main/ansible/README.md#ansible-vault).
+When using the scripts in the [MUST.SIEM.Infrastructure repo](), one needs to create a vault containing sensitive variables and secrets. For more information, see [the GitHub documentation](https://github.com/Cybership-Uganda-2023/MUST.SIEM.Infrastructure/blob/main/ansible/README.md#ansible-vault).
 
 ### certificates
 
-Wazuh requires certificates for deployment. These can be generated (see the [commands section](#generate-certificates)) using the files in [indexer\certificates](./indexer/certificates/). The [config file](./indexer/certificates/config.yml) can be modified to suit your setup. Currently, it is aimed at a single-stack Wazuh implementation (dashboard, indexer and manager on one instance). More information on the  [certification tool](./indexer/certificates/wazuh-certs-tool.sh) and the certificates can be found in the [official Wazuh documentation](https://github.com/Cybership-Uganda-2023/MUST_playbooks).
+Wazuh requires certificates for deployment. These can be generated (see the [commands section](#generate-certificates)) using the files in [indexer\certificates](./indexer/certificates/). The [config file](./indexer/certificates/config.yml) can be modified to suit your setup. Currently, it is aimed at a single-stack Wazuh implementation (dashboard, indexer and manager on one instance). More information on the  [certification tool](./indexer/certificates/wazuh-certs-tool.sh) and the certificates can be found in the [official Wazuh documentation](https://documentation.wazuh.com/current/user-manual/certificates.html).
 
 ### Wazuh-manager
 
-In its current implementation, the Wazuh manager, indexer and dashboard are configured to work in a single instance. The [MUST.wazuh-single playbook](MUST.wazuh-single.yml) defines the configuration of this instance (allthough some capabilities are declared in separate files, see [Wazuh extended capabilities](#wazuh-extended-capabilities)).
+In its current implementation, the Wazuh manager, indexer and dashboard are configured to work in a single instance. The [MUST.wazuh-single playbook](/MUST.wazuh-single.yml) defines the configuration of this instance (allthough some capabilities are declared in separate files, see [Wazuh extended capabilities](#wazuh-extended-capabilities)).
 
 The playbook is a modified version of [wazuh-single in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-single.yml), and is largely unchanged, with the exception of the variables.
 
@@ -70,9 +64,9 @@ First, `vars_files` is used to reference the variables described in [the vars di
 
 ### Wazuh-agents
 
-The playbook is a modified version of [wazuh-agent in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-agent.yml), and is largely unchanged, with the exception of the variables.
+The [Linux agents](/MUST.wazuh-agents-Linux.yml) playbook is a modified version of [wazuh-agent in the official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible/blob/master/playbooks/wazuh-agent.yml), and is largely unchanged, with the exception of the variables.
 
-First, `vars_files` is used to reference the variables described in [the vars directory](#variables). Here, the IP address variable is used to refer to the manager's address. Also, in the `wazuh_managers` variable, the api protocol is set to https instead of http.
+First, `vars_files` is used to reference the variables described in [the vars directory](#variables). Here, the IP address variable is used to refer to the manager's address. Also, in the `wazuh_managers` variable, the api protocol is set to https instead of http to (slightly) enhance security.
 
 Secondly, many other variables are used to set the configuration options of `/var/ossec/etc/ossec.conf` on the Wazuh manager. The variables used here are described in [the official Wazuh documentations Variables references](https://documentation.wazuh.com/current/deployment-options/deploying-with-ansible/reference.html#wazuh-agent). Since most of these apply to the extended capabilities, their functionality will be described in [the relevant chapters](#wazuh-extended-capabilities).
 
@@ -102,7 +96,7 @@ Through the use of the Wazuh password tool, located on the Wazuh manager under `
 - the `wazuh`-account, used by the Wazuh API[^6]
 - the `wazuh-wui`-account, used by the Wazuh API[^6]
 
-The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user. The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
+The [passwords playbook](/supporting_packages/passwords.yml) uses the tool and these secret variables to set this new password for the admin user (which is used to log in to the dashboard). The [api passwords playbook](/supporting_packages/passwords.api.yml) uses the tool and these secret variables to set these new passwords for the api users.
 
 #### Vulnerability scanning
 
@@ -184,7 +178,7 @@ Wazuh has an active response module that helps security teams automate response 
 - [Block a user account if 3 unsuccessful login attempts are made (to prevent brute forcing)](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/disabling-user-account.html)
 - [Block and IP address that tries to brute force their way inside via SSH](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/ar-use-cases/blocking-ssh-brute-force.html#infrastructure)[^5]
 
-These configurations are applied using the [active-response playbook](/supporting_packages/active-response.yml) and the [active-response directory](/supporting_packages/active-response/). Most of the tasks defined therein simply add a new ossec rule and configuration block to the Wazuh manager. 
+These configurations are applied using the [active-response playbook](/supporting_packages/active-response.yml) and the files in the [active-response directory](/supporting_packages/active-response/). Most of the tasks defined therein simply add a new ossec rule and configuration block to the Wazuh manager. 
 
 You can visualize these alerts on the dashboard by selecting the agent, selecting the **Security events** module and filtering the results on the relevant rule ID.
 
@@ -237,7 +231,7 @@ This section details some useful and necessary commands which can be used to ins
 First, one must move to the location of the repository. To ensure that the code is up-to-date, execute a pull request.
 
 ```Bash
-cd /etc/ansible/roles/wazuh-ansible/MUST_playbooks
+cd /etc/ansible/roles/wazuh-ansible/MUST.SIEM.Ansible-playbooks
 sudo git pull
 ```
 
@@ -251,65 +245,13 @@ sudo chmod +x ./indexer/certificates/wazuh-certs-tool.sh
 sudo ./indexer/certificates/wazuh-certs-tool.sh -A
 ```
 
-### Test configuration
-
-#### Ansible server
-
-```Bash
-ansible --version
-sudo ansible Wazuh-agent -m ping -i inventory
-sudo ansible Wazuh-single -m ping -i inventory
-sudo ansible all -m ping -i inventory
-```
-
-#### Wazuh indexer
-
-```Bash
-sudo systemctl status wazuh-indexer
-curl -k -u admin:changeme https://localhost:9200
-```
-
-#### Wazuh dashboard
-
-```Bash
-sudo systemctl status wazuh-dashboard
-
-# Test API
-TOKEN=$(curl -u wazuh:wazuh -k -X GET "https://localhost:55000/security/user/authenticate?raw=true") && echo $TOKEN
-curl -k -X GET "https://localhost:55000/" -H "Authorization: Bearer $TOKEN"
-
-# get info/OS version on <AGENT ID> (ex: 001)
-curl -k -X GET "https://localhost:55000/agents?pretty=true&agents_list=001&select=os.name,os.major" -H  "Authorization: Bearer $TOKEN"
-sqlite3 /var/ossec/queue/db/global.db "SELECT OS_NAME, OS_MAJOR FROM AGENT WHERE ID = 001;"
-```
-
-#### Wazuh manager
-
-```Bash
-sudo systemctl status wazuh-manager
-sudo systemctl status filebeat
-sudo filebeat test output
-
-# Check vulnerability scan
-sudo cat /var/ossec/logs/ossec.log | grep -i -E "vulnerability"
-
-# Check created groups. source: https://documentation.wazuh.com/current/user-manual/reference/tools/agent-groups.html
-sudo /var/ossec/bin/agent_groups -l
-```
-
-#### Wazuh agent
-
-```Bash
-sudo systemctl status wazuh-agent
-```
-
 ### Execute playbooks
 
 The statements below can be used to execute the (relevant) playbooks.
 The configuration of these playbooks is described in [Modified files](#modified-files).
 
 ```Bash
-sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass  MUST.wazuh-single.yml
+sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass MUST.wazuh-single.yml
 
 sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass MUST.wazuh-agents-Linux.yml
 
@@ -355,35 +297,60 @@ sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pas
 sudo ansible-playbook -i inventory -b -K --vault-password-file /root/ansible_pass backup_and_recovery/recover.agent.yml
 ```
 
-#### Check validity of playbooks
+### Test configuration
 
-[Ansible Lint is a command-line tool for linting playbooks, roles and collections aimed toward any Ansible users. Its main goal is to promote proven practices, patterns and behaviors while avoiding common pitfalls that can easily lead to bugs or make code harder to maintain.](https://ansible-lint.readthedocs.io/)
+The configuration and installation fo Ansible and Wazuh can be tested and verified with the following commands.
 
-If Ansible Lint is installed on the Ansible server, the following commands can be used to check the configuration of the Ansible playbooks:[^1]
+#### Ansible server
 
 ```Bash
-sudo ansible-lint MUST.wazuh-single.yml
-
-sudo ansible-lint MUST.wazuh-agents-Linux.yml
-
-sudo ansible-lint supporting_packages/yara.yml
-
-sudo ansible-lint supporting_packages/sca.yml
-
-sudo ansible-lint supporting_packages/who.yml
-
-sudo ansible-lint supporting_packages/active-response.yml
-
-sudo ansible-lint vars/vars-development.yml
+ansible --version
+sudo ansible all -m ping -i inventory
+sudo ansible Wazuh-agents-Linux -m ping -i inventory
+sudo ansible Wazuh-single -m ping -i inventory
 ```
 
-## Project status
-*the current status of the project. A todo list is appropriate*
+#### Wazuh indexer
 
-## Known errors
-*List the problems and bugs that are not yet fixed in the current iteration of the project.*
+```Bash
+sudo systemctl status wazuh-indexer
+curl -k -u admin:changeme https://localhost:9200
+```
 
-[^1]: Do note that this repo is aimed to be used in conjunction with the [official Wazuh-Ansible repository](https://github.com/wazuh/wazuh-ansible.git), and so it does not modify the roles created in that repository. Therefore, Ansible Lint may return errors on those role documents. This repository does not aim to refactor all those documents.
+#### Wazuh dashboard
+
+```Bash
+sudo systemctl status wazuh-dashboard
+
+# Test API
+TOKEN=$(curl -u wazuh:wazuh -k -X GET "https://localhost:55000/security/user/authenticate?raw=true") && echo $TOKEN
+curl -k -X GET "https://localhost:55000/" -H "Authorization: Bearer $TOKEN"
+
+# get info/OS version on <AGENT ID> (ex: 001)
+AGENT_ID='001'
+curl -k -X GET "https://localhost:55000/agents?pretty=true&agents_list=$AGENT_ID&select=os.name,os.major" -H  "Authorization: Bearer $TOKEN"
+sqlite3 /var/ossec/queue/db/global.db "SELECT OS_NAME, OS_MAJOR FROM AGENT WHERE ID = $AGENT_ID;"
+```
+
+#### Wazuh manager
+
+```Bash
+sudo systemctl status wazuh-manager
+sudo systemctl status filebeat
+sudo filebeat test output
+
+# Check vulnerability scan
+sudo cat /var/ossec/logs/ossec.log | grep -i -E "vulnerability"
+```
+
+#### Wazuh agent
+
+```Bash
+sudo systemctl status wazuh-agent
+```
+
+## Notes
+*List the notes, problems and bugs that are not yet fixed in the current iteration of the project.*
 
 [^2]: The first Wazuh documentation mentioned does not explicitly mention which settings should be applied ot the manager, and which to the agent. In the second piece of documentation (to which this note refers) these are declared explicitly.
 
